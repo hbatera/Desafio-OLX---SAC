@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+ <meta http-equiv="X-UA-Compatible" content="IE=edge">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <title>Desafio OLX - SAC</title>
+
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+ <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+ <style>
+	.navbar {
+		min-height: 20px;
+		margin-bottom: 10px;
+	}
+
+	.navbar-fixed-top,
+	.navbar-fixed-bottom {
+		position: relative;
+		right: 0;
+		left: 0;
+		z-index: @zindex-navbar-fixed;
+	}
+ </style>
+ <script>
+	var idChamado;
+	$(document).ready(function () {
+		idChamado = getParameterByName('idChamados');
+		
+		buscaTipoChamados();
+		
+		buscaMotivosChamados();
+		
+		buscaEstados();
+		
+		if (idChamado !== null && idChamado !== undefined)
+		{
+			setTimeout(function(){
+				buscaChamadoEditar(idChamado);
+			}, 2000);
+		}
+	});
+	
+	function buscaTipoChamados()
+	{
+		//Retorna os Tipos de Chamado Cadastrados
+		$.ajax({
+            type: "get",
+			//timeout: 10000,
+            url: 'http://localhost:8080/WebServiceRest/rest/service/chamado/todosTiposChamados',
+            //data: { empresa: $("#empresa").val() },
+            dataType: 'json',
+            //contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                if (data != null) {
+                    var selectbox = $('#tpChamado');
+					var html='';
+					html += '<option value="None">Selecione</option>';
+                    selectbox.find('option').remove();
+                    $.each(data, function (i, d) {
+                        //$('<option>').val(d.idTipoChamado).text(d.dscTipoChamado).appendTo(selectbox);
+						html += '<option value="' + d.idTipoChamado + '">' + d.dscTipoChamado + '</option>';
+                    });
+					
+					$('#tpChamado').html(html);
+                }
+            }
+        });
+	}
+	
+	function buscaMotivosChamados()
+	{
+		//Retorna os Motivos de Chamado Cadastrados
+		$.ajax({
+            type: "get",
+            url: 'http://localhost:8080/WebServiceRest/rest/service/chamado/todosMotivosChamados',
+            dataType: 'json',
+            success: function (data) {
+                if (data != null) {
+                    var selectbox = $('#motChamado');
+					var html='';
+					html += '<option value="None">Selecione</option>';
+                    selectbox.find('option').remove();
+                    $.each(data, function (i, d) {
+						html += '<option value="' + d.idMotivoChamado + '">' + d.dscMotivoChamado + '</option>';
+                    });
+					
+					$('#motChamado').html(html);
+                }
+            }
+        });
+	}
+	
+	function buscaEstados()
+	{
+		//Retorna os estados Cadastrados
+		$.ajax({
+            type: "get",
+            url: 'http://localhost:8080/WebServiceRest/rest/service/chamado/todosEstados',
+            dataType: 'json',
+            success: function (data) {
+                if (data != null) {
+                    var selectbox = $('#estados');
+					var html='';
+					html += '<option value="None">Selecione</option>';
+                    selectbox.find('option').remove();
+                    $.each(data, function (i, d) {
+						html += '<option value="' + d.idEstadosBR + '">' + d.dscEstado + '</option>';
+                    });
+					
+					$('#estados').html(html);
+                }
+            }
+        });
+	}
+	
+	function buscaChamadoEditar(idChamado)
+	{
+		$.ajax({
+				type: "get",
+				timeout: 20000,
+				url: 'http://localhost:8080/WebServiceRest/rest/service/chamado/getChamado/' + idChamado,
+				dataType: 'json',
+				success: function (data) {
+					if (data != null) {
+						$('#tpChamado option[value=' + data.idTipoChamado + ']').attr('selected', 'selected');
+						$('#motChamado option[value=' + data.idMotivoChamado + ']').attr('selected', 'selected');
+						$('#estados option[value=' + data.idEstadosBR + ']').attr('selected', 'selected');
+						$('#comment').val(data.dscDetalhesChamado);
+					}
+				}
+			});
+	}
+	
+	function getParameterByName(name, url) {
+		if (!url) {
+			url = window.location.href;
+		}
+		name = name.replace(/[\[\]]/g, "\\$&");
+		
+		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+			results = regex.exec(url);
+			
+		if (!results) return null;
+		
+		if (!results[2]) return '';
+		
+		return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+	
+	(function() {
+		function toJSONString( form ) {
+			var obj = {};
+			if(idChamado !== null && idChamado !== undefined)
+			{
+				obj["idChamados"] = idChamado;
+			}
+			var elements = form.querySelectorAll( "input, select, textarea" );
+			for( var i = 0; i < elements.length; ++i ) {
+				var element = elements[i];
+				var name = element.name;
+				var value = element.value;
+	
+				if( name ) {
+					obj[ name ] = value;
+				}
+			}
+	
+			return JSON.stringify( obj );
+		}
+	
+		document.addEventListener( "DOMContentLoaded", function() {
+			var form = document.getElementById( "formChamado" );
+			form.addEventListener( "submit", function( e ) {
+				e.preventDefault();
+				var json = toJSONString( this );
+				
+				if (idChamado !== null && idChamado !== undefined)
+				{ //Registro para editar
+					$.ajax({
+						type: 'PUT',
+						url: 'http://localhost:8080/WebServiceRest/rest/service/chamado/alterar',
+						data: json, 
+						contentType: "application/json",
+						error: function (result) {
+							alert('Não foi possivel Alterar o Chamado.');
+						},
+						success: function(result) {
+		
+							alert("Chamado cadastrado com Sucesso!"); 
+							window.location.href = "chamado.html";
+						}
+					});
+				}
+				else
+				{ //Registro Novo
+					$.ajax({
+						type: 'POST',
+						url: 'http://localhost:8080/WebServiceRest/rest/service/chamado/cadastrar',
+						data: json, 
+						contentType: "application/json",
+						error: function (result) {
+							alert('Não foi possivel Inserir o Chamado.');
+						},
+						success: function(result) {
+		
+							if (result) {
+								alert('Chamado cadastrado com sucesso.');
+								window.location.href = "chamado.html";
+							}
+						}
+					});
+				}
+				
+			}, false);
+	
+		});
+	})();
+	
+ </script>
+</head>
+<body> 
+ <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	<div class="container">
+	<div class="navbar-header">
+	<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+		<span class="sr-only">Toggle navigation</span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+	</button>
+	<a class="navbar-brand" href="index.html">Desafio OLX - SAC</a>
+	</div>
+	<div id="navbar" class="navbar-collapse collapse">
+	<ul class="nav navbar-nav navbar-right">
+		<li><a href="chamado.html">Chamados</a></li>
+		<!--<li><a href="#">Tipo de Chamados</a></li>
+		<li><a href="#">Motivo do Chamado</a></li>
+		<li><a href="#">Estados Brasileiros</a></li> -->
+	</ul>
+	</div>
+	</div>
+ </nav>
+ 
+ <div id="main" class="container">
+	<div class="row">
+		<h3 class="page-header">Cadastrar Chamado</h3>
+		
+		<form id="formChamado" action="#" method="post">
+			<div class="row">
+				<div class="form-group col-md-4">
+					<label for="campo1">Tipo de Chamado</label>
+					<!--<input type="text" class="form-control" id="campo1"> -->
+					<select class="form-control" id="tpChamado" name="idTipoChamado">
+						<!-- <option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option> -->
+					</select>
+
+				</div>
+					
+				<div class="form-group col-md-4">
+					<label for="campo2">Motivo do Chamado</label>
+					<!-- <input type="text" class="form-control" id="campo3"> -->
+					<select class="form-control" id="motChamado" name="idMotivoChamado">
+						<!-- <option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option> -->
+					</select>
+				</div>
+					
+				<div class="form-group col-md-4">
+					<label for="campo3">Estado</label>
+					<!-- <input type="text" class="form-control" id="campo3"> -->
+					<select class="form-control" id="estados" name="idEstadosBR">
+						<!-- <option value="19">Rio de Janeiro</option>
+						<option value="05">São Paulo</option>
+						<option value="01">Espirito Santo</option>
+						<option value="10">Minas Gerais</option> -->
+					</select>
+				</div>
+			</div>
+			<div class="row">
+				<div class="form-group col-md-12">
+					<label for="comment">Detalhes do Chamado:</label>
+					<textarea class="form-control" rows="5" id="comment" name="dscDetalhesChamado"></textarea>
+				</div>
+			</div>
+			<hr />
+			<div id="actions" class="row">
+				<div class="col-md-12">
+					<button type="submit" class="btn btn-primary" value="Send"><!--onclick="salvarChamado();"-->Salvar</button>
+					<a href="index.html" class="btn btn-default">Cancelar</a>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Modal Mensagem -->
+<div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modalLabel"></h4>
+            </div>
+            <div class="modal-body"> </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalMensagem" role="dialog">
+    <div class="modal-dialog modal-md">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 id="modal-title" class="modal-title">Mensagem</h4>
+            </div>
+            <div class="modal-body" id="textoMensagem">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-voltar" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div> 
+ 
+</body>
+</html>

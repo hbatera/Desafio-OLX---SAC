@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+ <meta http-equiv="X-UA-Compatible" content="IE=edge">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <title>Desafio OLX - SAC</title>
+
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+ <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+ <style>
+	.navbar {
+		min-height: 20px;
+		margin-bottom: 10px;
+	}
+
+	.navbar-fixed-top,
+	.navbar-fixed-bottom {
+		position: relative;
+		right: 0;
+		left: 0;
+		z-index: @zindex-navbar-fixed;
+	}
+ </style>
+ <script>
+	var valorTeste;
+	$(document).ready(function () {
+		GetChamados();
+	});
+	
+	function GetChamados() {
+			$.ajax({
+				type: "GET",
+				timeout: 10000,
+				url: 'http://localhost:8080/WebServiceRest/rest/service/chamado/todosChamados',
+				dataType: 'json',
+				success: function (data) {
+					
+					var resultado = data;
+					
+					var html = '';
+					
+					$.each(data, function (i, item) {
+						
+						html += '<tr>';
+						html +=	'	<td>'+ item.dscDetalhesChamado + '</td>';
+						html +=	'	<td>'+ item.dscTipoChamado + '</td>';
+						html +=	'	<td>'+ item.dscMotivoChamado + '</td>';
+						html +=	'	<td>'+ item.dataChamado + '</td>';
+						html +=	'	<td>'+ item.dscEstado + '</td>';
+						html +=	'	<td class="actions">';
+						html +=	'		<a class="btn btn-warning btn-xs" href="SaveChamado.html?idChamados='+ item.idChamados +'">Editar</a>';
+						html +=	'		<a class="btn btn-danger btn-xs"  href="#" data-toggle="modal" data-target="#delete-modal" onclick="chamarModalExcluir('+ item.idChamados +');">Excluir</a>';
+						html +=	'	</td>';
+						html +=	'</tr>';
+					});
+					
+					$('#tabela').html(html);
+				}
+			});
+	}
+	
+	function excluiChamado(idChamados) {
+
+            $.ajax({
+                type: "DELETE",
+                timeout: 10000,
+                url: "http://localhost:8080/WebServiceRest/rest/service/chamado/excluir/" + idChamados,
+                data: idChamados,
+                error: function () {
+                    alert('Erro ao Tentar ação.');
+                },
+                success: function (result) {
+                    if (result) {
+                        $("#textoMensagem").text("Chamado excluído com sucesso.");
+                        $("#modalMensagem").modal();
+                        $("#delete-modal").modal('hide');
+                        GetChamados();
+                    }
+                    else {
+                        $("#textoMensagem").text("Não foi possivel excluir o chamado.");
+                        $("#modalMensagem").modal();
+                        $("#delete-modal").modal('hide');
+                    }
+                }
+            });
+        }
+	
+	function chamarModalExcluir(idChamados)
+        {
+                        
+            var html = '<button id="excluiChamado" type="button" class="btn btn-acao" onclick="excluiChamado(' + idChamados +')">Excluir</button>';
+
+            $('#modalFooter').append(html);
+
+        }
+ </script>
+</head>
+<body> 
+ <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	<div class="container">
+	<div class="navbar-header">
+	<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+		<span class="sr-only">Toggle navigation</span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+	</button>
+	<a class="navbar-brand" href="index.html">Desafio OLX - SAC</a>
+	</div>
+	<div id="navbar" class="navbar-collapse collapse">
+	<ul class="nav navbar-nav navbar-right">
+		<li><a href="chamado.html">Chamados</a></li>
+		<!--<li><a href="#">Tipo de Chamados</a></li>
+		<li><a href="#">Motivo do Chamado</a></li>
+		<li><a href="#">Estados Brasileiros</a></li> -->
+	</ul>
+	</div>
+	</div>
+ </nav>
+ 
+ <div id="main" class="container">
+	<div class="row">
+		<h3 class="page-header">Desafio OLX - SAC</h3>
+		
+		<div id="main" class="container-fluid">
+			<div id="top" class="row">
+				<div class="col-md-3">
+					<h2>Chamados</h2>
+				</div>
+				<div class="col-md-9">
+					<a href="SaveChamado.html" class="btn btn-primary pull-right h2">Novo Item</a>
+				</div>
+			</div> <!-- /#top -->
+		
+			<hr />
+			<div id="list" class="row">
+				<div class="table-responsive col-md-12">
+					<table class="table table-striped" cellspacing="0" cellpadding="0">
+						<thead>
+							<tr>
+								<th>Descrição</th>
+								<th>Tipo de chamado</th>
+								<th>Motivo do chamado</th>
+								<th>Data do chamado</th>
+								<th>Estado</th>
+								<th class="actions">Ações</th>
+							</tr>
+						</thead>
+						<tbody id="tabela">
+			
+							
+			
+						</tbody>
+					</table>
+			
+				</div>
+			</div> <!-- /#list -->
+		
+			<!-- <div id="bottom" class="row">
+				<div class="col-md-12">
+					
+					<ul class="pagination">
+						<li class="disabled"><a>&lt; Anterior</a></li>
+						<li class="disabled"><a>1</a></li>
+						<li><a href="#">2</a></li>
+						<li><a href="#">3</a></li>
+						<li class="next"><a href="#" rel="next">Próximo &gt;</a></li>
+					</ul>
+			
+				</div>
+			</div> -->
+		</div>  
+	</div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modalLabel">Excluir Chamado</h4>
+            </div>
+            <div class="modal-body">Deseja realmente excluir este Chamado? </div>
+            <div id="modalFooter" class="modal-footer">
+                <!-- <button type="button" class="btn btn-primary">Sim</button> -->
+                <button type="button" class="btn btn-default" data-dismiss="modal">N&atilde;o</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalMensagem" role="dialog">
+    <div class="modal-dialog modal-md">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 id="modal-title" class="modal-title">Mensagem</h4>
+            </div>
+            <div class="modal-body" id="textoMensagem">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-voltar" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+ 
+</body>
+</html>
